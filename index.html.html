@@ -146,6 +146,33 @@
         background: #9c46ff;
         border-radius: 10px;
       }
+      #topbar,
+      #header,
+      #mobile-nav {
+        transition:
+          transform 0.35s ease,
+          opacity 0.35s ease,
+          background-color 0.3s ease,
+          border-color 0.3s ease;
+      }
+      body.header-scrolled #topbar,
+      body.header-scrolled #header {
+        background: rgba(8, 10, 20, 0.78);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border-color: rgba(255, 255, 255, 0.1);
+      }
+      body.header-hidden #topbar {
+        transform: translateY(-100%);
+      }
+      body.header-hidden #header {
+        transform: translateY(calc(-100% - 42px));
+      }
+      body.header-hidden #mobile-nav {
+        transform: translateY(calc(-100% - 122px));
+        opacity: 0;
+        pointer-events: none;
+      }
 
       /* Animaciones */
       @keyframes fade-in-up {
@@ -337,7 +364,7 @@
     <!-- Hero Section -->
     <section
       id="hero"
-      class="relative min-h-screen mt-20 flex items-center justify-center overflow-hidden px-6 md:px-16"
+      class="relative min-h-screen mt-28 md:mt-32 flex items-center justify-center overflow-hidden px-6 md:px-16"
     >
       <div
         class="absolute inset-0 flex items-center justify-center pointer-events-none z-0 animate-pulse-logo"
@@ -353,7 +380,7 @@
         </div>
       </div>
 
-      <div class="relative z-10 max-w-5xl mx-auto text-center">
+      <div class="relative z-10 max-w-5xl mx-auto text-center pt-8 md:pt-12">
         <h1
           class="font-display text-5xl md:text-7xl lg:text-8xl xl:text-9xl font-bold leading-[1.1] tracking-[-0.03em] mb-5 animate-fade-in-up"
         >
@@ -1672,6 +1699,41 @@
               mobileNav.classList.add("hidden"),
             ),
           );
+      }
+
+      // --- HEADER DINÁMICO ---
+      const body = document.body;
+      const topbar = document.getElementById("topbar");
+      const header = document.getElementById("header");
+      if (body && topbar && header) {
+        let lastScrollY = window.scrollY;
+        const headerRevealThreshold = 24;
+
+        function updateHeaderState() {
+          const currentScrollY = window.scrollY;
+          const scrollingDown =
+            currentScrollY > lastScrollY &&
+            currentScrollY - lastScrollY > headerRevealThreshold;
+          const scrollingUp =
+            currentScrollY < lastScrollY &&
+            lastScrollY - currentScrollY > 8;
+
+          body.classList.toggle("header-scrolled", currentScrollY > 20);
+
+          if (currentScrollY <= 20 || scrollingUp) {
+            body.classList.remove("header-hidden");
+          } else if (scrollingDown) {
+            body.classList.add("header-hidden");
+            if (mobileNav) {
+              mobileNav.classList.add("hidden");
+            }
+          }
+
+          lastScrollY = currentScrollY;
+        }
+
+        updateHeaderState();
+        window.addEventListener("scroll", updateHeaderState, { passive: true });
       }
 
       // --- SCROLL SUAVE (MEJORADO) ---
